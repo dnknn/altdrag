@@ -952,6 +952,13 @@ __declspec(dllexport) LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wP
           state.ignorectrl = 1;
         }
 
+        // don't drag with additional modificators pressed
+        if (sharedstate.shift || state.ctrl) {
+            sharedstate.action = ACTION_NONE;
+            UnhookMouse();
+            return CallNextHookEx(NULL, nCode, wParam, lParam);
+        }
+        
         // Hook mouse
         HookMouse();
       }
@@ -959,6 +966,12 @@ __declspec(dllexport) LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wP
         sharedstate.snap = 3;
         if (!sharedstate.shift) {
           sharedstate.shift = 1;
+          
+          // stop drag at pressing shift
+          sharedstate.action = ACTION_NONE;
+          UnhookMouse();
+          return CallNextHookEx(NULL, nCode, wParam, lParam);
+            
           MouseMove();
         }
 
@@ -981,6 +994,15 @@ __declspec(dllexport) LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wP
       else {
         state.interrupted = 1;
       }
+      
+      // stop drag at pressing ctrl
+      if ((vkey == VK_LCONTROL || vkey == VK_RCONTROL) && !state.ignorectrl && !state.ctrl) {
+        state.ctrl = 1;
+        sharedstate.action = ACTION_NONE;
+        UnhookMouse();
+        return CallNextHookEx(NULL, nCode, wParam, lParam);
+      }
+      
       if (sharedstate.action && (vkey == VK_LCONTROL || vkey == VK_RCONTROL) && !state.ignorectrl && !state.ctrl) {
         POINT pt;
         GetCursorPos(&pt);
