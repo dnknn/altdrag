@@ -15,6 +15,10 @@ set x64=0
 if "%1" == "x64" set x64=1
 if "%2" == "x64" set x64=1
 
+set run_after_build=0
+if "%1" == "run" set run_after_build=1
+if "%2" == "run" set run_after_build=1
+
 taskkill /IM AltDrag.exe
 
 if not exist bin. mkdir bin
@@ -73,7 +77,7 @@ if "%1" == "all" (
     %prefix64%gcc -o hooks_x64.dll hooks.c bin/hooks_x64.o -mdll -lshlwapi -lcomctl32 -lpsapi -lole32 -g -DDEBUG
   )
 
-  if "%1" == "run" (
+  if "%run_after_build%" == "1" (
     start AltDrag.exe
   )
 )
